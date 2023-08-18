@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "tusur"
+version = "0.1.0"
+description = "A project that allows you to work with TUSUR via python"
+authors = ["Daniil Detter <58367115+Tarodictrl@users.noreply.github.com>"]
+license = "MIT License"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+requests = "^2.31.0"
+bs4 = "^0.0.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
