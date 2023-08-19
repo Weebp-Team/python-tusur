@@ -108,7 +108,7 @@ class Timetable:
                 lesson = ls.find_all("td")[i]
                 discipline = lesson.find("span", class_="discipline")
                 kind = lesson.find("span", class_="kind")
-                teacher = lesson.find("span", class_="kind")
+                teacher = lesson.find("span", class_="group")
                 normalized_discipline = self.__normalize_text(discipline.text) if discipline else None
                 normalized_kind = self.__normalize_text(kind.text) if kind else None
                 normalized_teacher = self.__normalize_text(teacher.text) if teacher else None
