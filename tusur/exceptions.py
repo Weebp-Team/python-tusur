@@ -1,2 +1,6 @@
 class TimetableNotFound(Exception):
     ...
+
+
+class StudentNotFound(Exception):
+    ...
