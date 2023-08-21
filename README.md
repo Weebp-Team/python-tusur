@@ -22,13 +22,13 @@ from tusur import Timetable
     "lessons": [
         {
             "time": "08:50 10:25",
-            " discipline": null,
+            "discipline": null,
             "view": null,
             "teacher": null
         },
         {
             "time": "10:40 12:15",
-            " discipline": null,
+            "discipline": null,
             "view": null,
             "teacher": null
         },

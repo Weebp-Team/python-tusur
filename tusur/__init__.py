@@ -5,9 +5,9 @@
 """
 
 from .session import Timetable, Ocenka
-
+from .sdo import Notifications
 
 __author__ = "Tarodictrl"
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 __license__ = "MIT License"
 __email__ = "vudi600@gmail.com"
