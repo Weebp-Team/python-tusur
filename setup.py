@@ -8,7 +8,7 @@ def readme():
 
 setup(
     name='tusur',
-    version='0.1.1',
+    version='0.2.0',
     author='Tarodictrl',
     author_email='vudi600@gmail.com',
     description='A project that allows you to work with tusur.ru via python',
