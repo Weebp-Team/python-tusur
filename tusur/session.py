@@ -1,89 +1,58 @@
-"""
-Module Documentation: Timetable and Ocenka Classes
-
-This module contains two classes, Timetable and Ocenka, which provide methods for fetching student timetables and academic marks from the TUSUR University systems.
-
-Timetable Class:
-----------------
-Timetable class provides methods to fetch student timetables from the TUSUR University's timetable system.
-
-Attributes:
-    __common_search_url (str): The base URL for the common search on the timetable system.
-    __session (requests.Session): A session object to handle HTTP requests and maintain session state.
-
-Methods:
-    get_timetable(search_data: str, week_id: int = None) -> list:
-        Fetches and parses the student's timetable.
-
-        Parameters:
-            search_data (str): Search query data, typically the student's group or other identifying information.
-            week_id (int, optional): ID of the week for which the timetable is requested.
-
-        Returns:
-            list: A list of dictionaries containing timetable information for each day.
-
-Ocenka Class:
--------------
-Ocenka class provides methods to fetch student academic marks from the TUSUR University's academic marks system.
-
-Attributes:
-    __student_search_url (str): The URL for searching students in the academic marks system.
-    __student_marks_url (str): The base URL for fetching student marks via the API.
-    __student_statistics_url (str): The URL for fetching student statistics via the API.
-    __session (requests.Session): A session object to handle HTTP requests and maintain session state.
-
-Methods:
-    get_all_marks(surname: str, name: str, group: str) -> dict:
-        Fetches and returns all academic marks and related information for a student.
-
-        Parameters:
-            surname (str): Student's surname.
-            name (str): Student's first name.
-            group (str): Student's group.
-
-        Returns:
-            dict: A dictionary containing student information, available courses, and academic marks for each course.
-
-    get_marks_by_course(surname: str, name: str, group: str, course: int) -> dict:
-        Fetches and returns academic marks for a student for a specific course.
-
-        Parameters:
-            surname (str): Student's surname.
-            name (str): Student's first name.
-            group (str): Student's group.
-            course (int): Course number.
-
-        Returns:
-            dict: A dictionary containing academic marks and related information for the specified course.
-"""
-
 import requests
 import json
 
 from requests import Response
 from bs4 import BeautifulSoup
 from .exceptions import TimetableNotFound, StudentNotFound
+from .constants import (
+    COMMON_SEARCH_URL,
+    STUDENT_MARKS_URL,
+    STUDENT_SEARCH_URL
+)
 
 
 class Timetable:
     def __init__(self) -> None:
-        self.__common_search_url = "https://timetable.tusur.ru/searches/common_search"
+        """
+        Initialize an instance of the Timetable class.
+        """
         self.__session = requests.session()
 
     def __get_timetable_url(self, search_data: int) -> str:
+        """
+        Retrieve the timetable URL for the given search data.
+
+        Args:
+            search_data (int): Search data used to generate the timetable URL.
+
+        Returns:
+            str: The generated timetable URL.
+
+        Raises:
+            TimetableNotFound: If the timetable URL is not found.
+        """
         params = {
             "utf8": "✓",
             "search[common]": search_data,
             "commit": ""
         }
-        response = self.__session.get(url=self.__common_search_url,
+        response = self.__session.get(url=COMMON_SEARCH_URL,
                                       params=params)
         if len(response.history) == 0:
-            raise TimetableNotFound(f'A search for "{search_data}" yielded no results')
+            raise TimetableNotFound(search_data)
         return response.url
 
     @staticmethod
     def __normalize_text(text: str) -> str | None:
+        """
+        Normalize the provided text by removing extra spaces and newlines.
+
+        Args:
+            text (str): The text to normalize.
+
+        Returns:
+            str | None: The normalized text, or None if the input was None.
+        """
         if text is not None:
             striped_text = text.strip()
             replaced_text = striped_text.replace("  ", "")
@@ -91,6 +60,18 @@ class Timetable:
         return None
 
     def __parse_timetable(self, response: Response) -> list:
+        """
+        Parse the timetable information from the provided response.
+
+        Args:
+            response (Response): The response containing timetable information.
+
+        Returns:
+            list: A list of dictionaries representing the parsed timetable.
+
+        Example:
+            parsed_timetable = self.__parse_timetable(response)
+        """
         timetable = []
         soup = BeautifulSoup(response.content, "html.parser")
         table = soup.find("table", class_="table")
@@ -121,6 +102,19 @@ class Timetable:
         return timetable
 
     def get_timetable(self, search_data: str, week_id: int = None) -> list:
+        """
+        Get the timetable for the provided search data.
+
+        Args:
+            search_data (str): Search data for finding the timetable.
+            week_id (int, optional): The week ID for filtering the timetable. Default is None.
+
+        Returns:
+            list: A list of dictionaries representing the retrieved timetable.
+
+        Example:
+            timetable = self.get_timetable("search_data_here", week_id=2)
+        """
         timetable_url: str = self.__get_timetable_url(search_data=search_data)
         timetable: Response = self.__session.get(url=timetable_url,
                                                  params={"week_id": week_id})
@@ -130,12 +124,26 @@ class Timetable:
 
 class Ocenka:
     def __init__(self) -> None:
-        self.__student_search_url = "https://ocenka.tusur.ru/student_search"
-        self.__student_marks_url = "https://ocenka.tusur.ru/api/students/{context_id}"
-        self.__student_statistics_url = "https://ocenka.tusur.ru/api/students/{context_id}/statistics"
+        """
+        Initialize an instance of the Ocenka class.
+        """
         self.__session = requests.session()
 
     def __get_student_url(self, surname: str, name: str, group: str) -> str:
+        """
+        Retrieve the student's URL using their surname, name, and group.
+
+        Args:
+            surname (str): Student's surname.
+            name (str): Student's name.
+            group (str): Student's group.
+
+        Returns:
+            str: The generated student URL.
+
+        Raises:
+            StudentNotFound: If the student URL is not found.
+        """
         params = {
             "utf8": "✓",
             "surname": surname,
@@ -143,32 +151,71 @@ class Ocenka:
             "group": group,
             "commit": "Найти"
         }
-        response = self.__session.get(url=self.__student_search_url,
+        response = self.__session.get(url=STUDENT_SEARCH_URL,
                                       params=params)
         if len(response.history) == 0:
-            raise StudentNotFound(f'A search for "{surname} {name} {group}" yielded no results')
+            raise StudentNotFound(surname, name, group)
         return response.url
 
     def __get_context_id(self, response: Response) -> int:
+        """
+        Get the context ID from the provided response.
+
+        Args:
+            response (Response): The response containing the context ID.
+
+        Returns:
+            int: The extracted context ID.
+
+        Example:
+            context_id = self.__get_context_id(response)
+        """
         soup = BeautifulSoup(response.content, "html.parser")
         js_role_token = soup.find("span", class_="js-role-token")
         context_id = json.loads(js_role_token.get("data-role"))["context_id"]
         return context_id
 
     def __get_marks_by_api(self, context_id: int, course: int) -> dict:
+        """
+        Get the student's marks using the API.
+
+        Args:
+            context_id (int): The context ID of the student.
+            course (int): The course for which to retrieve marks.
+
+        Returns:
+            dict: A dictionary containing the retrieved marks.
+
+        Example:
+            marks = self.__get_marks_by_api(context_id, course)
+        """
         params = {
             "context_id": context_id,
             "context_type": "student",
             "course": course,
             "role": "student_search"
         }
-        url: str = self.__student_marks_url.format(context_id=context_id)
+        url: str = STUDENT_MARKS_URL.format(context_id=context_id)
         response: Response = self.__session.get(url=url, params=params)
         if response.status_code == 200:
             return response.json()
         return {}
 
     def get_all_marks(self, surname: str, name: str, group: str):
+        """
+        Get all marks for the provided student.
+
+        Args:
+            surname (str): Student's surname.
+            name (str): Student's name.
+            group (str): Student's group.
+
+        Returns:
+            dict: A dictionary containing student information and their marks.
+
+        Example:
+            all_marks = self.get_all_marks("Smith", "John", "GroupA")
+        """
         student_url: str = self.__get_student_url(surname=surname,
                                                   name=name,
                                                   group=group)
@@ -196,6 +243,21 @@ class Ocenka:
 
     def get_marks_by_course(self, surname: str, name: str,
                             group: str, course: int):
+        """
+        Get marks for the provided student and course.
+
+        Args:
+            surname (str): Student's surname.
+            name (str): Student's name.
+            group (str): Student's group.
+            course (int): The course for which to retrieve marks.
+
+        Returns:
+            dict: A dictionary containing the student's marks for the specified course.
+
+        Example:
+            course_marks = self.get_marks_by_course("Smith", "John", "GroupA", 1)
+        """
         student_url: str = self.__get_student_url(surname=surname,
                                                   name=name,
                                                   group=group)
@@ -204,10 +266,3 @@ class Ocenka:
         result = self.__get_marks_by_api(context_id=context_id,
                                          course=course)
         return result
-
-
-"""
-Please note that the provided code contains the implementation of the Timetable and Ocenka classes.
-This documentation only outlines the usage and purpose of the classes and their methods.
-For detailed usage examples and exception handling, refer to the module where these classes are used.
-"""

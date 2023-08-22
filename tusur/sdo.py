@@ -1,63 +1,55 @@
+from typing import List
 from .authorization import Auth
-from .exceptions import TusurError
+from .ajax import Ajax
+from .constants import NOTIFICATIONS_URL
 
 
-class Notifications(Auth):
-    """
-    Class for retrieving notifications from the TUSUR system.
-
-    Args:
-        login (str): User's login.
-        password (str): User's password.
-
-    Attributes:
-        __notifications_url (str): URL for retrieving notifications.
-        __service_url (str): Service URL.
-
-    Methods:
-        get_notifications(): Retrieves user notifications.
-    """
+class Notifications(Auth, Ajax):
     def __init__(self, login: str, password: str) -> None:
         """
-        Initializes a Notifications object.
+        Initialize an instance of the Notifications class.
 
         Args:
-            login (str): User's login.
-            password (str): User's password.
+            login (str): The user's login/email.
+            password (str): The user's password.
         """
+        Auth.__init__(self, login, password)
+        Ajax.__init__(self)
 
-        super().__init__(login, password)
-        self.__notifications_url = "https://sdo.tusur.ru/message/output/popup/notifications.php"
-        self.__service_url = "https://sdo.tusur.ru/lib/ajax/service.php"
-
-    def get_notifications(self) -> dict:
+    def get_notifications(self, limit: int = 1000,
+                          offset: int = 0) -> List[dict]:
         """
-        Retrieves user notifications.
+        Get notifications for the authenticated user.
+
+        Args:
+            limit (int, optional): The maximum number of notifications
+                                   to retrieve. Default is 1000.
+            offset (int, optional): The offset to start retrieving
+                                    notifications from. Default is 0.
 
         Returns:
-            dict: Dictionary containing notification data.
-        Raises:
-            TusurError: If an error occurs while retrieving notifications.
-        """
+            List[dict]: A list of dictionaries representing
+                        the retrieved notifications.
 
-        response = self.session.get(self.__notifications_url)
-        sesskey = self.get_sesskey(response)
-        contextInstanceId = self.get_contextInstanceId(response)
+        Example:
+            notifications_instance = Notifications('user@example.com', 'password')
+            notifications = notifications_instance.get_notifications(limit=10, offset=0)
+        """
+        response = self._session.get(NOTIFICATIONS_URL)
+        sesskey = self._get_sesskey(response)
+        contextInstanceId = self._get_contextInstanceId(response)
         data = [{
             "index": 0,
             "methodname": "message_popup_get_popup_notifications",
             "args": {
-                "limit": 1000,
-                "offset": 0,
+                "limit": limit,
+                "offset": offset,
                 "useridto": contextInstanceId
             }
         }]
-        notifications = self.session.post(self.__service_url,
-                                          params={
-                                              "sesskey": sesskey,
-                                              "info": "message_popup_get_popup_notifications"
-                                          },
-                                          json=data).json()
-        if notifications[0]["error"]:
-            raise TusurError(notifications["error"])
+        params = {
+            "sesskey": sesskey,
+            "info": "message_popup_get_popup_notifications"
+        }
+        notifications = self._ajax_send(params=params, data=data)
         return notifications

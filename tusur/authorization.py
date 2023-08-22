@@ -1,92 +1,76 @@
 import re
 from requests import session, Response
 from .exceptions import AuthorizationFailed
+from .constants import AUTH_URL, SDO_AUTH_REDIRECT_URL
 
 
 class Auth:
-    """
-    Class for handling authentication with TUSUR services.
-
-    Args:
-        login (str): User's login.
-        password (str): User's password.
-
-    Attributes:
-        __login (str): User's login.
-        __password (str): User's password.
-        __auth_url (str): URL for authentication.
-        session (Session): Requests session for making HTTP requests.
-
-    Methods:
-        get_sesskey(response: Response) -> str: Extracts sesskey from the response.
-        get_contextInstanceId(response: Response) -> str: Extracts contextInstanceId from the response.
-    """
     def __init__(self, login: str, password: str) -> None:
         """
-        Initializes an Auth object.
+        Initialize an instance of the Auth class.
 
         Args:
-            login (str): User's login.
-            password (str): User's password.
+            login (str): The user's login/email.
+            password (str): The user's password.
         """
         self.__login = login
         self.__password = password
-        self.__auth_url = "https://profile.tusur.ru/en/users/sign_in"
-        self.__sdo_auth_redirect = "https://sdo.tusur.ru/auth/edu/?id=1"
-        self.session = session()
+        self._session = session()
         self.__auth()
         self.__sdo_auth()
 
     def __auth(self):
         """
-        Performs user authentication.
+        Perform user authentication.
 
         Raises:
-            AuthorizationFailed: If the authorization fails.
+            AuthorizationFailed: If authentication is unsuccessful.
         """
         form = {
             "utf8": "✓",
             "user[email]": self.__login,
             "user[password]": self.__password
         }
-        response = self.session.post(self.__auth_url, data=form)
+        response = self._session.post(AUTH_URL, data=form)
         if not response.url.endswith("dashboard"):
-            raise AuthorizationFailed("Authorization failed! " +
-                                      "Check your email and password.")
+            raise AuthorizationFailed()
 
     def __sdo_auth(self):
         """
-        Performs SDO authentication after profile authentication.
+        Perform SDO (Single Sign-On) authentication.
         """
-        self.session.get(self.__auth_url,
-                         params={
-                             "redirect_url": self.__sdo_auth_redirect
-                         })
+        self._session.get(AUTH_URL,
+                          params={
+                              "redirect_url": SDO_AUTH_REDIRECT_URL
+                          })
 
-    def get_sesskey(self, response: Response) -> str:
+    def _get_sesskey(self, response: Response) -> str:
         """
-        Extracts sesskey from the response.
+        Extract and return the sesskey from the response text.
 
         Args:
-            response (Response): HTTP response containing the sesskey.
+            response (Response): The response object
+                                 from which to extract the sesskey.
 
         Returns:
-            str: Extracted sesskey.
+            str: The extracted sesskey, or an empty string if not found.
         """
         sesskey = re.search(r'"sesskey":"(.*?)"', response.text)
         if sesskey:
             sesskey = sesskey.group(1)
         return sesskey
 
-    def get_contextInstanceId(self, response: Response) -> str:
+    def _get_contextInstanceId(self, response: Response) -> str:
         """
-        Extracts contextInstanceId from the response.
+        Extract and return the contextInstanceId from the response text.
 
         Args:
-            response (Response): HTTP response containing contextInstanceId.
+            response (Response): The response object
+                                 from which to extract the contextInstanceId.
 
         Returns:
-            str: Extracted contextInstanceId.
+            str: The extracted contextInstanceId,
+                 or an empty string if not found.
         """
         contextInstanceId = re.search(r'"contextInstanceId":(.*?),',
                                       response.text)
