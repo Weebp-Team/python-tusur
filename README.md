@@ -1,5 +1,5 @@
 # Tusur API
-![PyPI](https://img.shields.io/pypi/v/tusur?color=orange) ![GitHub Pull Requests](https://img.shields.io/github/issues-pr/Weebp-Team/tusur?color=blueviolet) ![License](https://img.shields.io/pypi/l/tusur?color=blueviolet) ![Forks](https://img.shields.io/github/forks/Weebp-team/tusur?style=social)
+![PyPI](https://img.shields.io/pypi/v/python-tusur?color=orange) ![GitHub Pull Requests](https://img.shields.io/github/issues-pr/Weebp-Team/python-tusur?color=blueviolet) ![License](https://img.shields.io/pypi/l/python-tusur?color=blueviolet) ![Forks](https://img.shields.io/github/forks/Weebp-team/python-tusur?style=social)
 
 Python library for working with site TUSUR
 
