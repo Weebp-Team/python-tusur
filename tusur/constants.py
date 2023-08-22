@@ -1,0 +1,8 @@
+NOTIFICATIONS_URL = "https://sdo.tusur.ru/message/output/popup/notifications.php"
+AJAX_SERVICE_URL = "https://sdo.tusur.ru/lib/ajax/service.php"
+AUTH_URL = "https://profile.tusur.ru/en/users/sign_in"
+SDO_AUTH_REDIRECT_URL = "https://sdo.tusur.ru/auth/edu/?id=1"
+COMMON_SEARCH_URL = "https://timetable.tusur.ru/searches/common_search"
+STUDENT_SEARCH_URL = "https://ocenka.tusur.ru/student_search"
+STUDENT_MARKS_URL = "https://ocenka.tusur.ru/api/students/{context_id}"
+STUDENT_STATISTICS_URL = "https://ocenka.tusur.ru/api/students/{context_id}/statistics"
