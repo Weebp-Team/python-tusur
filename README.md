@@ -6,7 +6,7 @@ Python library for working with site TUSUR
 ## Installation
 
 ```sh
-pip install tusur 
+pip install python-tusur 
 ```
 
 ## Usage
