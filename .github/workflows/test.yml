@@ -31,6 +31,8 @@ jobs:
         poetry add flake8 
         poetry add pytest
         poetry install
+        touch .env
+        echo ${{ secrets.ENV_SECRET }} | base64 -di > .env
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
