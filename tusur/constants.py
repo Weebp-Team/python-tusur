@@ -1,4 +1,5 @@
 NOTIFICATIONS_URL = "https://sdo.tusur.ru/message/output/popup/notifications.php"
+MESSAGES_URL = "https://sdo.tusur.ru/message/index.php"
 AJAX_SERVICE_URL = "https://sdo.tusur.ru/lib/ajax/service.php"
 AUTH_URL = "https://profile.tusur.ru/en/users/sign_in"
 SDO_AUTH_REDIRECT_URL = "https://sdo.tusur.ru/auth/edu/?id=1"
