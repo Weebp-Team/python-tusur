@@ -1,7 +1,7 @@
 from typing import List
 from .authorization import Auth
 from .ajax import Ajax
-from .constants import NOTIFICATIONS_URL
+from .constants import NOTIFICATIONS_URL, MESSAGES_URL
 
 
 class Notifications(Auth, Ajax):
@@ -53,3 +53,38 @@ class Notifications(Auth, Ajax):
         }
         notifications = self._ajax_send(params=params, data=data)
         return notifications
+
+
+class Messages(Auth, Ajax):
+    def __init__(self, login: str, password: str) -> None:
+        """
+        Initialize an instance of the Notifications class.
+
+        Args:
+            login (str): The user's login/email.
+            password (str): The user's password.
+        """
+        Auth.__init__(self, login, password)
+        Ajax.__init__(self)
+
+    def get_messages(self, favourites: bool = False) -> list:
+        response = self._session.get(MESSAGES_URL)
+        sesskey = self._get_sesskey(response)
+        contextInstanceId = self._get_contextInstanceId(response)
+        data = [{
+            "index": 0,
+            "methodname": "core_message_get_conversations",
+            "args": {
+                "favourites": favourites,
+                "limitfrom": 0,
+                "limitnum": 51,
+                "type": None,
+                "userid": contextInstanceId
+            }
+        }]
+        params = {
+            "sesskey": sesskey,
+            "info": "core_message_get_conversations"
+        }
+        messages = self._ajax_send(params=params, data=data)
+        return messages

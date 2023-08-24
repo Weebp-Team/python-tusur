@@ -17,24 +17,24 @@ from tusur import Timetable
 >>> timetable = Timetable()
 >>> timetable.get_timetable("571-2", week_id=666)
 >>> [
-    {
-    "day": "Mon, May 22",
-    "lessons": [
         {
-            "time": "08:50 10:25",
-            "discipline": null,
-            "view": null,
-            "teacher": null
-        },
-        {
-            "time": "10:40 12:15",
-            "discipline": null,
-            "view": null,
-            "teacher": null
-        },
-    ...
-    ]
-    }
+        "day": "Mon, May 22",
+        "lessons": [
+            {
+                "time": "08:50 10:25",
+                "discipline": null,
+                "view": null,
+                "teacher": null
+            },
+            {
+                "time": "10:40 12:15",
+                "discipline": null,
+                "view": null,
+                "teacher": null
+            },
+        ...
+        ]
+        }
     ]
 ```
 
