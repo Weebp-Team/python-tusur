@@ -7,7 +7,7 @@ def readme():
 
 
 setup(
-    name='tusur',
+    name='python-tusur',
     version='0.3.1',
     author='Tarodictrl',
     author_email='vudi600@gmail.com',
