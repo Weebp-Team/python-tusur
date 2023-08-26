@@ -14,7 +14,7 @@ setup(
     description='A project that allows you to work with tusur.ru via python',
     long_description=readme(),
     long_description_content_type='text/markdown',
-    url='https://github.com/Weebp-Team/tusur',
+    url='https://github.com/Weebp-Team/python-tusur',
     packages=find_packages(),
     install_requires=['requests>=2.31.0', 'beautifulsoup4>=4.12.2'],
     classifiers=[

@@ -21,7 +21,7 @@ class Auth:
 
     def __auth(self):
         """
-        Perform user authentication.
+        Perform tusur.ru authentication.
 
         Raises:
             AuthorizationFailed: If authentication is unsuccessful.
@@ -37,7 +37,7 @@ class Auth:
 
     def __sdo_auth(self):
         """
-        Perform SDO (Single Sign-On) authentication.
+        Perform sdo.tusur.ru authentication.
         """
         self._session.get(AUTH_URL,
                           params={
