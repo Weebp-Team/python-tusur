@@ -4,7 +4,7 @@ from .ajax import Ajax
 from .constants import NOTIFICATIONS_URL, MESSAGES_URL
 
 
-class Notifications(Auth, Ajax):
+class Notifications(Auth):
     def __init__(self, login: str, password: str) -> None:
         """
         Initialize an instance of the Notifications class.
@@ -14,7 +14,7 @@ class Notifications(Auth, Ajax):
             password (str): The user's password.
         """
         Auth.__init__(self, login, password)
-        Ajax.__init__(self)
+        self.__ajax = Ajax(self._session)
 
     def get_notifications(self, limit: int = 1000,
                           offset: int = 0) -> List[dict]:
@@ -51,11 +51,11 @@ class Notifications(Auth, Ajax):
             "sesskey": sesskey,
             "info": "message_popup_get_popup_notifications"
         }
-        notifications = self._ajax_send(params=params, data=data)
+        notifications = self.__ajax._send(params=params, data=data)
         return notifications
 
 
-class Messages(Auth, Ajax):
+class Messages(Auth):
     def __init__(self, login: str, password: str) -> None:
         """
         Initialize an instance of the Notifications class.
@@ -65,7 +65,7 @@ class Messages(Auth, Ajax):
             password (str): The user's password.
         """
         Auth.__init__(self, login, password)
-        Ajax.__init__(self)
+        self.__ajax = Ajax(self._session)
 
     def get_messages(self, favourites: bool = False) -> list:
         response = self._session.get(MESSAGES_URL)
@@ -86,5 +86,5 @@ class Messages(Auth, Ajax):
             "sesskey": sesskey,
             "info": "core_message_get_conversations"
         }
-        messages = self._ajax_send(params=params, data=data)
+        messages = self.__ajax._send(params=params, data=data)
         return messages
