@@ -39,7 +39,10 @@ class Timetable:
         response = self.__session.get(url=COMMON_SEARCH_URL,
                                       params=params)
         if len(response.history) == 0:
-            raise TimetableNotFound(search_data)
+            group_url = self.__parse_group(response.content, search_data)
+            if group_url is None:
+                raise TimetableNotFound(search_data)
+            return group_url
         return response.url
 
     @staticmethod
@@ -57,7 +60,15 @@ class Timetable:
             striped_text = text.strip()
             replaced_text = striped_text.replace("  ", "")
             return replaced_text.replace("\n", " ")
-        return None
+    
+    @staticmethod
+    def __parse_group(response: str, group: str) -> str | None:
+        soup = BeautifulSoup(response, "html.parser")
+        ul = soup.find("ul", class_="list-inline")
+        for a in ul.find_all("a"):
+            href: str = a.get("href")
+            if href.endswith(group) and "groups" in href:
+                return "https://timetable.tusur.ru" + href
 
     def __parse_timetable(self, response: Response) -> list:
         """
