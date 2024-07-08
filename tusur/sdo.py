@@ -1,7 +1,12 @@
+import re
 from typing import List
+
+from bs4 import BeautifulSoup
+
+from tusur.exceptions import TusurError
 from .authorization import Auth
 from .ajax import Ajax
-from .constants import NOTIFICATIONS_URL, MESSAGES_URL
+from .constants import NOTIFICATIONS_URL, USER_INDEX_URL, USER_VIEW_URL
 
 
 class Notifications(Auth):
@@ -13,7 +18,7 @@ class Notifications(Auth):
             login (str): The user's login/email.
             password (str): The user's password.
         """
-        Auth.__init__(self, login, password)
+        super().__init__(login, password)
         self.__ajax = Ajax(self._session)
 
     def get_notifications(self, limit: int = 1000,
@@ -64,11 +69,11 @@ class Messages(Auth):
             login (str): The user's login/email.
             password (str): The user's password.
         """
-        Auth.__init__(self, login, password)
+        super().__init__(login, password)
         self.__ajax = Ajax(self._session)
 
     def get_messages(self, favourites: bool = False) -> list:
-        response = self._session.get(MESSAGES_URL)
+        response = self._session.get(USER_INDEX_URL)
         sesskey = self._get_sesskey(response)
         contextInstanceId = self._get_contextInstanceId(response)
         data = [{
@@ -88,3 +93,69 @@ class Messages(Auth):
         }
         messages = self.__ajax._send(params=params, data=data)
         return messages
+
+
+class User(Auth):
+
+    def __init__(self, login: str, password: str) -> None:
+        """
+        Initialize an instance of the User class.
+
+        Args:
+            login (str): The user's login/email.
+            password (str): The user's password.
+        """
+        super().__init__(login, password)
+
+    def __get_content(self, url: str, params: dict) -> bytes:
+        response = self._session.get(url=url, params=params)
+        if response.status_code != 200:
+            raise TusurError("Хуй знает")
+        return response.content
+
+    def __parse_user(self, soup: BeautifulSoup) -> dict:
+        name = soup.find("div", class_="page-header-headings").text
+        card = soup.find("div", class_="card-body")
+        contentnode = card.find_all("li", class_="contentnode")
+        email = contentnode[0].find("dd").find("a").text
+        country = contentnode[1].find("dd").text
+        town = contentnode[2].find("dd").text
+        time_zone = contentnode[3].find("dd").text
+        groups = contentnode[4].find("dd").text.strip()
+        return dict(name=name, email=email, country=country, town=town,
+                    time_zone=time_zone, groups=groups)
+
+    def __parse_participants(self, soup: BeautifulSoup) -> list[dict]:
+        table = soup.find("table", id="participants")
+        rows = table.find_all("tr", id=re.compile("^user-index"))
+        participants = []
+        for row in rows:
+            a = row.find("a")
+            if not a:
+                continue
+            span = a.find("span")
+            if span:
+                span.clear()
+            name = a.text
+            href = a.get("href")
+            role = row.find("td", class_="c2").text
+            groups = row.find("td", class_="c3").text
+            last_entry = row.find("td", class_="c4").text
+            participants.append(dict(name=name, url=href, role=role,
+                                     groups=groups, last_entry=last_entry))
+        return participants
+
+    def get_participants(self, id: int, tilast: str = None,
+                         tifirst: str = None, perpage: int = None,
+                         page: int = 0) -> dict:
+        params = dict(id=id, tifirst=tifirst, tilast=tilast,
+                      perpage=perpage, page=page)
+        content = self.__get_content(url=USER_INDEX_URL, params=params)
+        soup = BeautifulSoup(content, "html.parser")
+        return self.__parse_participants(soup)
+
+    def get_user(self, id: int) -> dict:
+        params = dict(id=id)
+        content = self.__get_content(url=USER_VIEW_URL, params=params)
+        soup = BeautifulSoup(content, "html.parser")
+        return self.__parse_user(soup)

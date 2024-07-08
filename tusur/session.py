@@ -60,7 +60,7 @@ class Timetable:
             striped_text = text.strip()
             replaced_text = striped_text.replace("  ", "")
             return replaced_text.replace("\n", " ")
-    
+
     @staticmethod
     def __parse_group(response: str, group: str) -> str | None:
         soup = BeautifulSoup(response, "html.parser")
